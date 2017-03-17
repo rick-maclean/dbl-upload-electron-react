@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <title>&uarr; Rick DBL Upload &uarr;</title>
+
+  <link rel="stylesheet" href="css/app.css"> <!--gulp puts the file here and creates the folder too
+                                              bootstrap code is also added into this file-->
+</head>
+  <body>
+    <div class="main">
+      <div class="page" id="pageUbsUploads">
+        <div class="container">
+              <div id="ubsUploads">
+              </div>
+        </div><!-- container -->
+      </div><!-- pageUbsUploads page -->
+    </div><!-- main -->
+
+    <script type="text/javascript">
+      var eRequire = require;       //define 'eRequire' so that NodeJs can use this. browserify uses 'require' to load libraries
+      var dirName = __dirname;
+      //require 'path' is MAC and Windows (cros platform), then go  ../data/data.json
+      var dataLocation = require('path').resolve(__dirname, '..', 'data', 'data.json');
+      var xmlDataLocation = require('path').resolve(__dirname, '..', 'data', 'maclean20160721-20170120.xml'); //maclean20160721-20170120.xml
+    </script>
+    <script src="js/render.js"></script> <!-- gulp also creates this file
+              it will add bootstrap, REACT library
+              browserify does all of this -->
+  </body>
+</html>

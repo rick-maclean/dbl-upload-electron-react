@@ -1,0 +1,14 @@
+Place your XML statement file from Wycliffe in this directory. 
+Drag it on top of the DragXMLOntoMe1.bat (or the ...2orMore.bat)
+
+The XML files will be processes by the saxon XSLT Home Edition (http://saxon.sourceforge.net/#F9.7HE) engine and a TNTmpd file will be output into TNTOutputs. This file can be double-clicked to open directly into TNT Connect software. 
+
+Saxon may require Java SDK to be installed. I can't remember at this point. 
+
+I believe the XSL file is currently coded for my account number:
+xsl:for-each select="wbtc:transaction[@tranType='donation' and wbtc:glAcct!='3-5031']">
+
+This will need to be edited 3-5031 for other people's use I think. I am not what 3-5031 represents.
+
+larry.hayashi@canil.ca
+Jan 2017
