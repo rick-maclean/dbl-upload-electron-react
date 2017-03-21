@@ -7,6 +7,8 @@ var fs = eRequire('fs'),
 
 var electron = eRequire('electron');
 var ipc = electron.ipcRenderer;
+var app = eRequire('electron').remote;
+var dialog = app.dialog;
 
 var React = require('react');
 var ReactDOM = require('react-dom');
@@ -26,7 +28,8 @@ var MainInterface = React.createClass({
       currentFileInfo: {
         filename: 'currentFileInfo filename',
         size: 'currentFileInfo size'
-      }
+      },
+      readyToEnableSendButton : false
     }//return
   }, //getInitialState
 
@@ -59,6 +62,18 @@ var MainInterface = React.createClass({
 
   onSelectMetaDataFile: function () {
     console.log('called onSelectMetaDataFile');
+    dialog.showOpenDialog({
+        title:"Select a folder",
+        properties: ["openDirectory"]
+      },function (folderPaths) {
+        // folderPaths is an array that contains all the selected paths
+        if(folderPaths === undefined){
+            console.log("No destination folder selected");
+            return;
+        }else{
+            console.log(folderPaths);
+        }
+    });
     this.setState({
       metadataFilepath: 'metadataFilepath changed in onSelectMetaDataFile',
     });
@@ -66,6 +81,14 @@ var MainInterface = React.createClass({
 
   onSelectJobSpecsFile: function () {
     console.log('called onSelectJobSpecsFile');
+    dialog.showOpenDialog(function (fileNames) {
+          // fileNames is an array that contains all the selected
+         if(fileNames === undefined){
+              console.log("No file selected");
+         }else{
+           console.log("SelectJobSpecsFile selected is" + fileNames[0]);
+         }
+       });
     this.setState({
       jobFilepath: 'jobFilepath changed in onSelectJobSpecsFile',
     });
