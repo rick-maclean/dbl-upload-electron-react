@@ -21,8 +21,8 @@ var MainInterface = React.createClass({
     return {
       emailUsername: '',
       password: '',
-      metadataFilepath: 'this is the filename and path for the metadata XML file',
-      jobFilepath: 'this is the filename and path for the jobspecs XML file',
+      metadataFilepath: 'Choose folder location of files to upload',
+      jobFilepath: 'Choose the jobspecs XML file',
       currentByteCount: 0,
       totalByteCount: 0,
       currentFileInfo: {
@@ -62,36 +62,32 @@ var MainInterface = React.createClass({
 
   onSelectMetaDataFile: function () {
     console.log('called onSelectMetaDataFile');
-    dialog.showOpenDialog({
-        title:"Select a folder",
-        properties: ["openDirectory"]
-      },function (folderPaths) {
-        // folderPaths is an array that contains all the selected paths
-        if(folderPaths === undefined){
-            console.log("No destination folder selected");
-            return;
-        }else{
-            console.log(folderPaths);
-        }
-    });
-    this.setState({
-      metadataFilepath: 'metadataFilepath changed in onSelectMetaDataFile',
-    });
+    var path = dialog.showOpenDialog(
+      { title:"Select a folder", properties: ["openDirectory"] }
+    );
+    if(path === undefined){
+        console.log("No destination folder selected");
+        return;
+    }else{
+          console.log(path);
+          this.setState({
+            metadataFilepath: path[0]
+          });
+      }
   },
 
   onSelectJobSpecsFile: function () {
     console.log('called onSelectJobSpecsFile');
-    dialog.showOpenDialog(function (fileNames) {
-          // fileNames is an array that contains all the selected
-         if(fileNames === undefined){
-              console.log("No file selected");
-         }else{
-           console.log("SelectJobSpecsFile selected is" + fileNames[0]);
-         }
-       });
-    this.setState({
-      jobFilepath: 'jobFilepath changed in onSelectJobSpecsFile',
-    });
+    var fileNames = dialog.showOpenDialog();
+    if(fileNames === undefined){
+        console.log("No file selected");
+        return;
+    }else{
+        console.log(fileNames);
+        this.setState({
+          jobFilepath: fileNames[0]
+        });
+      }
   },
 
   onHandleSend: function(sendFileSpecs) {
@@ -137,6 +133,7 @@ var MainInterface = React.createClass({
           onselectJobSpecsFile = {this.onSelectJobSpecsFile}
           handleSend = {this.onHandleSend}
           />
+
 
         </div>
     );
