@@ -21,17 +21,20 @@ var MainInterface = React.createClass({
     return {
       emailUsername: '',
       password: '',
-      metadataFilepath: 'Choose folder location of files to upload',
-      jobFilepath: 'Choose the jobspecs XML file',
+      metadataFilepath: '',
+      metadataFilepathSelected: false,
+      jobFilepath: '',
+      jobFilepathSelected: false,
       currentByteCount: 0,
-      totalByteCount: 0,
-      currentFileInfo: {
-        filename: 'currentFileInfo filename',
-        size: 'currentFileInfo size'
-      },
-      readyToEnableSendButton : false
+      totalByteCount: 0
     }//return
   }, //getInitialState
+/*
+currentFileInfo: {
+  filename: 'currentFileInfo filename',
+  size: 'currentFileInfo size'
+},
+*/
 
   showAbout:function() {
     ipc.sendSync('openInfoWindow');
@@ -67,13 +70,15 @@ var MainInterface = React.createClass({
     );
     if(path === undefined){
         console.log("No destination folder selected");
-        return;
+        this.setState({ metadataFilepathSelected: false });
+        this.setState({  metadataFilepath: '' });
     }else{
-          console.log(path);
-          this.setState({
-            metadataFilepath: path[0]
-          });
+          //console.log('going to set the path and boolean' + path);
+          this.setState({ metadataFilepathSelected: true });
+          this.setState({  metadataFilepath: path[0] });
       }
+      //console.log ('metadataFilepathSelected is set to: ' + this.state.metadataFilepathSelected);
+      console.log('end of onSelectMetaDataFile');
   },
 
   onSelectJobSpecsFile: function () {
@@ -81,24 +86,28 @@ var MainInterface = React.createClass({
     var fileNames = dialog.showOpenDialog();
     if(fileNames === undefined){
         console.log("No file selected");
+        this.setState({ jobFilepathSelected: false });
+        this.setState({ jobFilepath: '' });
         return;
     }else{
-        console.log(fileNames);
-        this.setState({
-          jobFilepath: fileNames[0]
-        });
+        //console.log('going to set the filename and boolean' + fileNames);
+        this.setState({ jobFilepathSelected: true });
+        this.setState({ jobFilepath: fileNames[0] });
       }
+      //console.log ('jobFilepathSelected is set to: ' + this.state.jobFilepathSelected.value);
+      console.log('end of onSelectJobSpecsFile');
   },
-
-  onHandleSend: function(sendFileSpecs) {
+    onHandleSend: function(sendFileSpecs) {
       console.log('called onHandleSend');
-      console.log('metaDataFile= ' + sendFileSpecs.metaDataFile);
+      console.log('metaDataFolder= ' + sendFileSpecs.metaDataFile);
       console.log('jobFilepath= ' + sendFileSpecs.jobFilepath);
   }, //onHandleSend
 
   computeTotalProgress: function() {
     return this.state.currentByteCount/this.state.totalByteCount*100;
   }, //computeTotalProgress
+
+
 
   render: function() {
     //var filteredApts = [];
@@ -118,6 +127,12 @@ var MainInterface = React.createClass({
     });
     */
 
+    if(this.state.jobFilepathSelected  &&  this.state.metadataFilepathSelected) {
+      $('#sendButton').removeAttr("disabled");
+    } else {
+      $('#sendButton').attr("disabled", "true");
+    }
+
     return(
         <div className="interface">
         <LoginSubcomponent
@@ -128,17 +143,17 @@ var MainInterface = React.createClass({
           <JobSpecification
           metadataFilepath = {this.state.metadataFilepath}
           jobFilepath = {this.state.jobFilepath}
-          currentFileInfo = {this.state.currentFileInfo}
           onselectMetaDataFile = {this.onSelectMetaDataFile}
           onselectJobSpecsFile = {this.onSelectJobSpecsFile}
           handleSend = {this.onHandleSend}
           />
-
-
         </div>
     );
   } //render
   /*
+enableSendButton = {this.state.enableSendButton}
+
+
   <JobSpecification
   metadataFilepath = {this.state.metadataFilepath}
   jobFilepath = {this.state.jobFilepath}

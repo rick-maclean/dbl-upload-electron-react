@@ -1,6 +1,7 @@
 var React = require('react');
 
 var JobSpecification = React.createClass({
+
   selectMetaDataFile: function() {
     this.props.onselectMetaDataFile();
   },
@@ -44,7 +45,7 @@ var JobSpecification = React.createClass({
                  </div>
                  <div className="form-group">
                    <div className="col-sm-offset-2 col-sm-10">
-                     <button type="submit" className="btn btn-primary pull-right">Send</button>
+                     <button type="submit" id="sendButton" className="btn btn-primary pull-left" disabled>Send</button>
                    </div>
                  </div>
              </form>
