@@ -16,17 +16,89 @@ var LoginSubcomponent = require('./LoginSubcomponent');
 var JobSpecification = require('./JobSpecification');
 var TotalProgress = require('./TotalProgress');
 
+
+function persistComponent(storage_key, jsonData) {
+  console.log('inside persitComponent() and storage_key is ' + storage_key + ', and jsonData is, ' + jsonData);
+    const appStorage = eRequire('electron-json-storage');
+    //Write
+    appStorage.set(storage_key, jsonData, function (error) {
+        if (error) throw error;
+    });
+}
+
+function restorePersistedData(jsonStoragekey) {
+  console.log('inside restorePersistedData() and storage_key is ' + jsonStoragekey);
+  const storage = eRequire('electron-json-storage');
+  //Read
+  storage.get(jsonStoragekey, function (error, retrievedData) {
+      if (error) throw error;
+
+      console.log('the data restored from persistance is = ' + retrievedData );
+      console.log(retrievedData);
+      });
+  //storage.get(jsonStoragekey, function (error, retrievedData) {
+  //    if (error) throw error;
+  //console.log('the data restored from persistance is = ' + retrievedData);
+}
+
+function restorePersistedAllData() {
+  const storage = eRequire('electron-json-storage');
+
+  storage.getAll(function(error, data) {
+    if (error) throw error;
+
+    console.log('inside restorePersistedAllData');
+    console.log('data.loginPersistKey is =>' +data.loginPersistKey);
+    console.log('data.metaDataPersistKey is =>' +data.metaDataPersistKey);
+    console.log('data.jobFilePersistKey is =>' +data.jobFilePersistKey);
+
+
+    //console.log('ALL the data restored from electron-json-storage  is : ' + data);
+    jQuery('#inputEmail').val(data.loginPersistKey);
+//    jQuery('#metadataFilepathId').text();
+//    jQuery('#jobFilePathId').text();
+
+
+    console.log(data);
+    console.log('data.loginPersistKey is =>' +data.loginPersistKey);
+    var objData = JSON.stringify(data);
+    console.log(objData);
+  });
+}
+
+function restoreDataThenObserve(jsonStoragekey, ractiveComponent, componentDataKey) {
+    const storage = require('electron-json-storage');
+    //Read
+    storage.get(jsonStoragekey, function (error, retrievedData) {
+        if (error) throw error;
+        ractiveComponent.set(componentDataKey, retrievedData);
+
+        let observeKeypath = componentDataKey + '.*';  //save all fields under componentDataKey
+        //Note: only start observe after data has been retrieved from storage. Otherwise the two operation will collide.
+        ractiveComponent.observe(observeKeypath, function (newValue, oldValue, keypath) {
+            persistComponent(jsonStoragekey, this.get(componentDataKey));
+        });
+    });
+}
+
+var jsonData =   '{   "petName": "Buffy"  }';
+var jsonToObjData = JSON.parse(jsonData);
+
 var MainInterface = React.createClass({
   getInitialState: function() {
     return {
       emailUsername: '',
       password: '',
-      metadataFilepath: '',
+      metadataFilepath: 'metadataFilepath',
       metadataFilepathSelected: false,
-      jobFilepath: '',
+      jobFilepath: 'jobFilepath',
       jobFilepathSelected: false,
       currentByteCount: 0,
-      totalByteCount: 0
+      totalByteCount: 0,
+      userKey: '',
+      errorMessage: '',
+      electronJsonStoredValue: '',
+      persistedData: jsonToObjData
     }//return
   }, //getInitialState
 /*
@@ -35,6 +107,32 @@ currentFileInfo: {
   size: 'currentFileInfo size'
 },
 */
+
+componentDidMount: function() {
+  const storage = eRequire('electron-json-storage');
+
+  storage.getAll(function(error, data) {
+    if (error) throw error;
+
+    console.log('inside onestorePersistedAllData');
+    console.log('data.loginPersistKey is =>' +data.loginPersistKey);
+    console.log('data.metaDataPersistKey is =>' +data.metaDataPersistKey);
+    console.log('data.jobFilePersistKey is =>' +data.jobFilePersistKey);
+
+    console.log('ALL the data restored from electron-json-storage  is : ' + data);
+    jQuery('#inputEmail').val(data.loginPersistKey);
+    let metadt = jQuery('#metadataFilepathId').text();
+    let metaPathdt = jQuery('#jobFilePathId').text();
+    console.log('metadt =>' + metadt);
+    console.log('metaPathdt =>' + metaPathdt);
+
+jQuery('#metadataFilepathId').text(data.metaDataPersistKey);
+jQuery('#jobFilePathId').text(data.jobFilePersistKey);
+
+    //console.log(data);
+
+  });
+  }, //componentDidMount
 
   showAbout:function() {
     ipc.sendSync('openInfoWindow');
@@ -51,8 +149,8 @@ currentFileInfo: {
   mainHandleLogin: function(loginCredentials) {
   var subuserName = loginCredentials.userName;
   var subpassword = loginCredentials.password;
-  console.log(subuserName);
-  console.log(subpassword);
+  console.log('subuserName is = ' + subuserName);
+  console.log('subpassword is = '  + subpassword);
   /*this.setState( {
     emailUsername : subuserName,
     password: subpassword
@@ -61,6 +159,35 @@ currentFileInfo: {
     emailUsername : subuserName,
     password : subpassword
     }); //setState
+
+    //let jsonDt1 = JSON.parse('{"emailUsername" : "' + subuserName + '"} ');
+    //console.log('jsonDt1 is =' + JSON.stringify(jsonDt1) );
+    //persistComponent('loginPersistKey', jsonDt1 );
+    persistComponent('loginPersistKey', subuserName);
+    //restorePersistedAllData();
+    //restorePersistedData('loginPersistKey');
+
+ /*================================= LOGIN CODE ====================================================
+ let params = $.param({ 'email': this.state.emailUsername, 'password': this.state.password });
+ let url = "https://app.thedigitalbiblelibrary.org/api/user_token?" + params;
+
+// $.get() requires "Allow-Control-Allow-Origin: *" Chrome extension when
+// running in localhost Chrome browser to avoid cross domain errors
+     $.get({
+         url: url,
+         success: function (result) {
+           this.setState( {
+             userKey : result,
+             errorMessage : ''
+             }); //setState
+         }
+     }).fail(function (response) {
+       let errorMsg = 'error.message' +  `${response.statusText} (Code ${response.status}) ${response.responseText}`;
+       this.setState( {
+         errorMessage : errorMsg
+         }); //setState
+     });
+     =================================================================================================*/
   }, //mainHandleLogin
 
   onSelectMetaDataFile: function () {
@@ -79,6 +206,10 @@ currentFileInfo: {
       }
       //console.log ('metadataFilepathSelected is set to: ' + this.state.metadataFilepathSelected);
       console.log('end of onSelectMetaDataFile');
+
+      persistComponent('metaDataPersistKey', path[0] );
+      //restorePersistedData('metaDataPersistKey');
+      //restorePersistedAllData();
   },
 
   onSelectJobSpecsFile: function () {
@@ -96,6 +227,12 @@ currentFileInfo: {
       }
       //console.log ('jobFilepathSelected is set to: ' + this.state.jobFilepathSelected.value);
       console.log('end of onSelectJobSpecsFile');
+
+      persistComponent('jobFilePersistKey', fileNames[0] );
+      //restorePersistedData('jobFilePersistKey');
+      //restorePersistedAllData();
+
+
   },
     onHandleSend: function(sendFileSpecs) {
       console.log('called onHandleSend');
