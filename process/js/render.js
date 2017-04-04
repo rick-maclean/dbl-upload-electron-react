@@ -16,7 +16,6 @@ var LoginSubcomponent = require('./LoginSubcomponent');
 var JobSpecification = require('./JobSpecification');
 var TotalProgress = require('./TotalProgress');
 
-
 function persistComponent(storage_key, jsonData) {
   console.log('inside persitComponent() and storage_key is ' + storage_key + ', and jsonData is, ' + jsonData);
     const appStorage = eRequire('electron-json-storage');
@@ -41,46 +40,6 @@ function restorePersistedData(jsonStoragekey) {
   //console.log('the data restored from persistance is = ' + retrievedData);
 }
 
-function restorePersistedAllData() {
-  const storage = eRequire('electron-json-storage');
-
-  storage.getAll(function(error, data) {
-    if (error) throw error;
-
-    console.log('inside restorePersistedAllData');
-    console.log('data.loginPersistKey is =>' +data.loginPersistKey);
-    console.log('data.metaDataPersistKey is =>' +data.metaDataPersistKey);
-    console.log('data.jobFilePersistKey is =>' +data.jobFilePersistKey);
-
-
-    //console.log('ALL the data restored from electron-json-storage  is : ' + data);
-    jQuery('#inputEmail').val(data.loginPersistKey);
-//    jQuery('#metadataFilepathId').text();
-//    jQuery('#jobFilePathId').text();
-
-
-    console.log(data);
-    console.log('data.loginPersistKey is =>' +data.loginPersistKey);
-    var objData = JSON.stringify(data);
-    console.log(objData);
-  });
-}
-
-function restoreDataThenObserve(jsonStoragekey, ractiveComponent, componentDataKey) {
-    const storage = require('electron-json-storage');
-    //Read
-    storage.get(jsonStoragekey, function (error, retrievedData) {
-        if (error) throw error;
-        ractiveComponent.set(componentDataKey, retrievedData);
-
-        let observeKeypath = componentDataKey + '.*';  //save all fields under componentDataKey
-        //Note: only start observe after data has been retrieved from storage. Otherwise the two operation will collide.
-        ractiveComponent.observe(observeKeypath, function (newValue, oldValue, keypath) {
-            persistComponent(jsonStoragekey, this.get(componentDataKey));
-        });
-    });
-}
-
 var jsonData =   '{   "petName": "Buffy"  }';
 var jsonToObjData = JSON.parse(jsonData);
 
@@ -89,8 +48,8 @@ var MainInterface = React.createClass({
     return {
       emailUsername: '',
       password: '',
-      metadataFilepath: 'metadataFilepath',
-      metadataFilepathSelected: false,
+      metaDataFolder: 'metaDataFolder',
+      metaDataFolderSelected: false,
       jobFilepath: 'jobFilepath',
       jobFilepathSelected: false,
       currentByteCount: 0,
@@ -110,7 +69,6 @@ currentFileInfo: {
 
 componentDidMount: function() {
   const storage = eRequire('electron-json-storage');
-
   storage.getAll(function(error, data) {
     if (error) throw error;
 
@@ -118,19 +76,10 @@ componentDidMount: function() {
     console.log('data.loginPersistKey is =>' +data.loginPersistKey);
     console.log('data.metaDataPersistKey is =>' +data.metaDataPersistKey);
     console.log('data.jobFilePersistKey is =>' +data.jobFilePersistKey);
-
-    console.log('ALL the data restored from electron-json-storage  is : ' + data);
+    // console.log('ALL the data restored from electron-json-storage  is : ' + data);
     jQuery('#inputEmail').val(data.loginPersistKey);
-    let metadt = jQuery('#metadataFilepathId').text();
-    let metaPathdt = jQuery('#jobFilePathId').text();
-    console.log('metadt =>' + metadt);
-    console.log('metaPathdt =>' + metaPathdt);
-
-jQuery('#metadataFilepathId').text(data.metaDataPersistKey);
-jQuery('#jobFilePathId').text(data.jobFilePersistKey);
-
-    //console.log(data);
-
+    jQuery('#metaDataFolderId').text(data.metaDataPersistKey);
+    jQuery('#jobFilePathId').text(data.jobFilePersistKey);
   });
   }, //componentDidMount
 
@@ -138,56 +87,42 @@ jQuery('#jobFilePathId').text(data.jobFilePersistKey);
     ipc.sendSync('openInfoWindow');
   }, //showAbout
 
-  deleteMessage: function(item) {
-    var allApts = this.state.myAppointments;
-    var newApts = _.without(allApts, item);
-    this.setState({
-      myAppointments: newApts
-    }); //setState
-  }, //deleteMessage
-
   mainHandleLogin: function(loginCredentials) {
-  var subuserName = loginCredentials.userName;
-  var subpassword = loginCredentials.password;
-  console.log('subuserName is = ' + subuserName);
-  console.log('subpassword is = '  + subpassword);
-  /*this.setState( {
-    emailUsername : subuserName,
-    password: subpassword
-  }); //setState */
-  this.setState( {
-    emailUsername : subuserName,
-    password : subpassword
-    }); //setState
+      var subuserName = loginCredentials.userName;
+      var subpassword = loginCredentials.password;
+      console.log('subuserName is = ' + subuserName);
+      console.log('subpassword is = '  + subpassword);
+      /*this.setState( {
+        emailUsername : subuserName,
+        password: subpassword
+      }); //setState */
+      this.setState( {
+        emailUsername : subuserName,
+        password : subpassword
+        }); //setState
+      persistComponent('loginPersistKey', subuserName);
 
-    //let jsonDt1 = JSON.parse('{"emailUsername" : "' + subuserName + '"} ');
-    //console.log('jsonDt1 is =' + JSON.stringify(jsonDt1) );
-    //persistComponent('loginPersistKey', jsonDt1 );
-    persistComponent('loginPersistKey', subuserName);
-    //restorePersistedAllData();
-    //restorePersistedData('loginPersistKey');
+     /*================================= LOGIN CODE ====================================================
+     let params = $.param({ 'email': this.state.emailUsername, 'password': this.state.password });
+     let url = "https://app.thedigitalbiblelibrary.org/api/user_token?" + params;
 
- /*================================= LOGIN CODE ====================================================
- let params = $.param({ 'email': this.state.emailUsername, 'password': this.state.password });
- let url = "https://app.thedigitalbiblelibrary.org/api/user_token?" + params;
-
-// $.get() requires "Allow-Control-Allow-Origin: *" Chrome extension when
-// running in localhost Chrome browser to avoid cross domain errors
-     $.get({
-         url: url,
-         success: function (result) {
+    // $.get() requires "Allow-Control-Allow-Origin: *" Chrome extension when
+    // running in localhost Chrome browser to avoid cross domain errors
+         $.get({
+             url: url,
+             success: function (result) {
+               this.setState( {
+                 userKey : result,
+                 errorMessage : ''
+                 }); //setState
+             }
+         }).fail(function (response) {
+           let errorMsg = 'error.message' +  `${response.statusText} (Code ${response.status}) ${response.responseText}`;
            this.setState( {
-             userKey : result,
-             errorMessage : ''
+             errorMessage : errorMsg
              }); //setState
-         }
-     }).fail(function (response) {
-       let errorMsg = 'error.message' +  `${response.statusText} (Code ${response.status}) ${response.responseText}`;
-       this.setState( {
-         errorMessage : errorMsg
-         }); //setState
-     });
-     =================================================================================================*/
+         });
+         =================================================================================================*/
   }, //mainHandleLogin
 
   onSelectMetaDataFile: function () {
@@ -197,20 +132,16 @@ jQuery('#jobFilePathId').text(data.jobFilePersistKey);
     );
     if(path === undefined){
         console.log("No destination folder selected");
-        this.setState({ metadataFilepathSelected: false });
-        this.setState({  metadataFilepath: '' });
+        this.setState({ metaDataFolderSelected: false });
+        this.setState({  metaDataFolder: '' });
     }else{
           //console.log('going to set the path and boolean' + path);
-          this.setState({ metadataFilepathSelected: true });
-          this.setState({  metadataFilepath: path[0] });
+          this.setState({ metaDataFolderSelected: true });
+          this.setState({  metaDataFolder: path[0] });
       }
-      //console.log ('metadataFilepathSelected is set to: ' + this.state.metadataFilepathSelected);
-      console.log('end of onSelectMetaDataFile');
-
       persistComponent('metaDataPersistKey', path[0] );
-      //restorePersistedData('metaDataPersistKey');
-      //restorePersistedAllData();
-  },
+      console.log('end of onSelectMetaDataFile');
+  }, //onSelectMetaDataFile
 
   onSelectJobSpecsFile: function () {
     console.log('called onSelectJobSpecsFile');
@@ -225,18 +156,13 @@ jQuery('#jobFilePathId').text(data.jobFilePersistKey);
         this.setState({ jobFilepathSelected: true });
         this.setState({ jobFilepath: fileNames[0] });
       }
-      //console.log ('jobFilepathSelected is set to: ' + this.state.jobFilepathSelected.value);
-      console.log('end of onSelectJobSpecsFile');
-
       persistComponent('jobFilePersistKey', fileNames[0] );
-      //restorePersistedData('jobFilePersistKey');
-      //restorePersistedAllData();
+      console.log('end of onSelectJobSpecsFile');
+  }, //onSelectJobSpecsFile
 
-
-  },
     onHandleSend: function(sendFileSpecs) {
       console.log('called onHandleSend');
-      console.log('metaDataFolder= ' + sendFileSpecs.metaDataFile);
+      console.log('metaDataFolder= ' + sendFileSpecs.metaDataFolder);
       console.log('jobFilepath= ' + sendFileSpecs.jobFilepath);
   }, //onHandleSend
 
@@ -264,7 +190,7 @@ jQuery('#jobFilePathId').text(data.jobFilePersistKey);
     });
     */
 
-    if(this.state.jobFilepathSelected  &&  this.state.metadataFilepathSelected) {
+    if(this.state.jobFilepathSelected  &&  this.state.metaDataFolderSelected) {
       $('#sendButton').removeAttr("disabled");
     } else {
       $('#sendButton').attr("disabled", "true");
@@ -278,7 +204,7 @@ jQuery('#jobFilePathId').text(data.jobFilePersistKey);
             subPassword = {this.state.password}
           />
           <JobSpecification
-          metadataFilepath = {this.state.metadataFilepath}
+          metaDataFolder = {this.state.metaDataFolder}
           jobFilepath = {this.state.jobFilepath}
           onselectMetaDataFile = {this.onSelectMetaDataFile}
           onselectJobSpecsFile = {this.onSelectJobSpecsFile}
@@ -287,24 +213,6 @@ jQuery('#jobFilePathId').text(data.jobFilePersistKey);
         </div>
     );
   } //render
-  /*
-enableSendButton = {this.state.enableSendButton}
-
-
-  <JobSpecification
-  metadataFilepath = {this.state.metadataFilepath}
-  jobFilepath = {this.state.jobFilepath}
-  currentFileInfo = {this.state.currentFileInfo}
-  onselectMetaDataFile = {this.onSelectMetaDataFile}
-  onselectJobSpecsFile = {this.onSelectJobSpecsFile}
-  handleSend = {this.onHandleSend}
-  />
-  <TotalProgress
-  currentByteCount = {this.state.currentByteCount}
-  totalByteCount = {this.state.totalByteCount}
-  totalProgress = {this.computeTotalProgress}
-  />
-  */
 });//MainInterface
 
 ReactDOM.render(

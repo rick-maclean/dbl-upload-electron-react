@@ -12,7 +12,7 @@ var JobSpecification = React.createClass({
   localHandleSend: function (e) {
     e.preventDefault();
     var tempSendFileSpecs = {
-      metaDataFile: this.props.metadataFilepath,
+      metaDataFolder: this.props.metaDataFolder,
       jobFilepath : this.props.jobFilepath
     } //tempSendFileSpecs
     this.props.handleSend(tempSendFileSpecs);  //pass tempItem to this prop in main
@@ -27,7 +27,7 @@ var JobSpecification = React.createClass({
                  <h3>Job</h3>
                  <div className="form-group">
                      <label>Metadata File</label>
-                     <div className="form-text" id="metadataFilepathId" >{this.props.metadataFilepath}</div>
+                     <div className="form-text" id="metaDataFolderId" >{this.props.metaDataFolder}</div>
                      <div className="col-sm-offset-3 col-sm-9">
                        <div className="pull-right">
                          <button type="button" className="btn btn-primary"  onClick={this.selectMetaDataFile}>Select metadata.xml</button>&nbsp;
