@@ -16,7 +16,7 @@ var LoginSubcomponent = require('./LoginSubcomponent');
 var JobSpecification = require('./JobSpecification');
 var TotalProgress = require('./TotalProgress');
 
-function persistComponent(storage_key, jsonData) {
+function persistData(storage_key, jsonData) {
   console.log('inside persitComponent() and storage_key is ' + storage_key + ', and jsonData is, ' + jsonData);
     const appStorage = eRequire('electron-json-storage');
     //Write
