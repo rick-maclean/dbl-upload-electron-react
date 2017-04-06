@@ -14,7 +14,8 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 var LoginSubcomponent = require('./LoginSubcomponent');
 var JobSpecification = require('./JobSpecification');
-var TotalProgress = require('./TotalProgress');
+var ProgressElement = require('./ProgressBar');
+//var ProgressBarDemo = require('./ProgressBarDemo');
 
 function persistData(storage_key, jsonData) {
   console.log('inside persitComponent() and storage_key is ' + storage_key + ', and jsonData is, ' + jsonData);
@@ -57,7 +58,8 @@ var MainInterface = React.createClass({
       userKey: '',
       errorMessage: '',
       electronJsonStoredValue: '',
-      persistedData: jsonToObjData
+      persistedData: jsonToObjData,
+      percentComplete: 35
     }//return
   }, //getInitialState
 /*
@@ -166,9 +168,9 @@ componentDidMount: function() {
       console.log('jobFilepath= ' + sendFileSpecs.jobFilepath);
   }, //onHandleSend
 
-  computeTotalProgress: function() {
+  computeProgressBar: function() {
     return this.state.currentByteCount/this.state.totalByteCount*100;
-  }, //computeTotalProgress
+  }, //computeProgressBar
 
 
 
@@ -197,7 +199,7 @@ componentDidMount: function() {
     }
 
     return(
-        <div className="interface">
+        <div className="container">
         <LoginSubcomponent
             subHandleLogin = {this.mainHandleLogin}
             subUsername = {this.state.emailUsername}
@@ -210,6 +212,8 @@ componentDidMount: function() {
           onselectJobSpecsFile = {this.onSelectJobSpecsFile}
           handleSend = {this.onHandleSend}
           />
+          <ProgressElement
+              percentComplete={this.state.percentComplete} />
         </div>
     );
   } //render

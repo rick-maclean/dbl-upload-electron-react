@@ -17,7 +17,7 @@ app.on('ready', function() {
   var appWindow, infoWindow;
   appWindow = new BrowserWindow({
     width: 1200,
-    height: 600,
+    height: 900,
     show: false
   }); //appWindow
   //appWindow.loadURL('http://macleanmanuscript.com');
