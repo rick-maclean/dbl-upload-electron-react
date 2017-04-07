@@ -41,6 +41,15 @@ function restorePersistedData(jsonStoragekey) {
   //console.log('the data restored from persistance is = ' + retrievedData);
 }
 
+function isNonemptyString(str) {
+  if (typeof str === 'string' && str.length > 0) {
+      return true;
+  }
+  else {
+    return false;
+  }
+}
+
 var jsonData =   '{   "petName": "Buffy"  }';
 var jsonToObjData = JSON.parse(jsonData);
 
@@ -59,7 +68,7 @@ var MainInterface = React.createClass({
       errorMessage: '',
       electronJsonStoredValue: '',
       persistedData: jsonToObjData,
-      percentComplete: 35
+      percentComplete: 15
     }//return
   }, //getInitialState
 /*
@@ -70,6 +79,8 @@ currentFileInfo: {
 */
 
 componentDidMount: function() {
+  console.log('componentDidMount lifecycle running');
+
   const storage = eRequire('electron-json-storage');
   storage.getAll(function(error, data) {
     if (error) throw error;
@@ -80,10 +91,30 @@ componentDidMount: function() {
     console.log('data.jobFilePersistKey is =>' +data.jobFilePersistKey);
     // console.log('ALL the data restored from electron-json-storage  is : ' + data);
     jQuery('#inputEmail').val(data.loginPersistKey);
-    jQuery('#metaDataFolderId').text(data.metaDataPersistKey);
-    jQuery('#jobFilePathId').text(data.jobFilePersistKey);
-  });
+
+    if (isNonemptyString(data.metaDataPersistKey) ) {
+      jQuery('#metaDataFolderId').text(data.metaDataPersistKey);
+      this.setState( { metaDataFolderSelected : true }); //setState
+    }
+
+    if (isNonemptyString(data.jobFilePersistKey) ) {
+      jQuery('#jobFilePathId').text(data.jobFilePersistKey);
+      this.setState( { jobFilepathSelected : true }); //setState
+    }
+
+    if (isNonemptyString(data.jobFilePersistKey) && isNonemptyString(data.metaDataPersistKey)) {
+      $('#sendButton').removeAttr("disabled");
+    }
+  }.bind(this));
   }, //componentDidMount
+
+  componentDidUpdate: function() {
+    console.log('componentDidUpdate lifecycle running');
+    console.log('this.state.metaDataFolder is =>' + this.state.metaDataFolder);
+    console.log('this.state.metaDataFolderSelected is =>' + this.state.metaDataFolderSelected);
+    console.log('this.state.jobFilepath is =>' + this.state.jobFilepath);
+    console.log('this.state.jobFilepathSelected is =>' + this.state.jobFilepathSelected);
+  }, //componentDidUpdate
 
   showAbout:function() {
     ipc.sendSync('openInfoWindow');
@@ -166,6 +197,17 @@ componentDidMount: function() {
       console.log('called onHandleSend');
       console.log('metaDataFolder= ' + sendFileSpecs.metaDataFolder);
       console.log('jobFilepath= ' + sendFileSpecs.jobFilepath);
+      var temp_percentComplete = this.state.percentComplete;
+      if (temp_percentComplete == 100)
+        { temp_percentComplete = 20; }
+      temp_percentComplete = temp_percentComplete + 0.33*temp_percentComplete;
+      if (temp_percentComplete > 100) {
+          this.setState({ percentComplete: 100}); }
+        else {
+          this.setState({ percentComplete: temp_percentComplete});
+        }
+
+
   }, //onHandleSend
 
   computeProgressBar: function() {
