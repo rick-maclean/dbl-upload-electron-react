@@ -133,7 +133,7 @@ componentDidMount: function() {
         emailUsername : subuserName,
         password : subpassword
         }); //setState
-      persistComponent('loginPersistKey', subuserName);
+      persistData('loginPersistKey', subuserName);
 
      /*================================= LOGIN CODE ====================================================
      let params = $.param({ 'email': this.state.emailUsername, 'password': this.state.password });
@@ -172,7 +172,7 @@ componentDidMount: function() {
           this.setState({ metaDataFolderSelected: true });
           this.setState({  metaDataFolder: path[0] });
       }
-      persistComponent('metaDataPersistKey', path[0] );
+      persistData('metaDataPersistKey', path[0] );
       console.log('end of onSelectMetaDataFile');
   }, //onSelectMetaDataFile
 
@@ -189,7 +189,7 @@ componentDidMount: function() {
         this.setState({ jobFilepathSelected: true });
         this.setState({ jobFilepath: fileNames[0] });
       }
-      persistComponent('jobFilePersistKey', fileNames[0] );
+      persistData('jobFilePersistKey', fileNames[0] );
       console.log('end of onSelectJobSpecsFile');
   }, //onSelectJobSpecsFile
 
@@ -206,8 +206,6 @@ componentDidMount: function() {
         else {
           this.setState({ percentComplete: temp_percentComplete});
         }
-
-
   }, //onHandleSend
 
   computeProgressBar: function() {
